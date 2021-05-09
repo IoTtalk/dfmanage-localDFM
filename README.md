@@ -1,9 +1,9 @@
-# Flask X-Talk Template
+# Flask X-Talk Example
 
 [[_TOC_]]
 
 ## Disclaimer
-This repository is just an example of a X-Talk template based on the Flask Framework. It can not be used directly like an Django reuse app. Of course you can copy any code from it if you think that piece of code is helpful.
+This repository is just an example of a X-Talk based on the Flask Framework. It can not be used directly like an Django reuse app. Of course you can copy any code from it if you think that piece of code is helpful.
 
 ## Requirements
 * Python 3.6+
@@ -17,7 +17,7 @@ This repository is just an example of a X-Talk template based on the Flask Frame
   ```
 
 ## Configuration
-* Go to the `flask-x-talk-template` directory inside the repository.
+* Go to the `flask-x-talk-example` directory inside the repository.
 * Copy the file `.env.example` and name the new one as `.env`.
 * Open the `.env` file and fill in the required configurations.
   * This file is an env file which contains a bunch of variables assignments and each variable will be added as an environment variable by the [python-dotenv](https://github.com/theskumar/python-dotenv) package when the server is booted up.
@@ -31,7 +31,7 @@ This repository is just an example of a X-Talk template based on the Flask Frame
   * `X-Forwared-Port`
 
 ## Start the Server
-* Go to the `flask-x-talk-template` directory inside the repository.
+* Go to the `flask-x-talk-example` directory inside the repository.
 * Use the following command to set `FLASK_APP` environment variable:
   ```
   $ export FLASK_APP=main.py
