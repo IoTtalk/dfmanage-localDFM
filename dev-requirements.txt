@@ -1,0 +1,2 @@
+flake8~=3.9.1
+flask-shell-ipython~=0.4.1
