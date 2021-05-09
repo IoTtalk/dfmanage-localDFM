@@ -1,0 +1,16 @@
+[flake8]
+
+ignore =
+    # H401: docstring should not start with a space
+    H401,
+    # W503: line break before binary operator
+    W503,
+    # F722: syntax error in forward annotation
+    F722,
+
+exclude =
+    .git,
+    __pycache__,
+    migrations
+
+max-line-length = 92
