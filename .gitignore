@@ -4,4 +4,4 @@ __pycache__
 *.sqlite3*
 *.db*
 tags
-flask-x-talk-template/.env
+flask-x-talk-example/.env
