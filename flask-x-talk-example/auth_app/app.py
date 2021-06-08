@@ -122,7 +122,7 @@ def oauth2_callback():
 
         # Login user
         login_user(user_record)
-        logger.info('User %r log in', current_user.username)
+        logger.info('User %r sign in', current_user.username)
     except Exception:
         db.session.rollback()
     else:
@@ -131,8 +131,8 @@ def oauth2_callback():
     return redirect(url_for('index'))
 
 
-@auth_app.route('/logout', methods=['POST', ], endpoint='logout_endpoint')
-def logout():
+@auth_app.route('/sign_out', methods=['POST', ], endpoint='sign_out_endpoint')
+def sign_out():
     if not current_user.is_authenticated:
         return redirect(url_for('index'))
 
@@ -173,7 +173,7 @@ def logout():
         # Delete the access token record no matter whether access token revocation is
         # success or not
         db.session.delete(access_token_record)
-        logger.info('User %r log out', current_user.username)
+        logger.info('User %r sign out', current_user.username)
         db.session.commit()
 
     logout_user()

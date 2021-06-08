@@ -44,7 +44,7 @@ This repository is just an example of a X-Talk based on the Flask Framework. It 
   ![](https://i.imgur.com/sCjvMMm.png)
 
 ## Notes
-* In this example, the access of an user will be revoked when that user is about to logout. It is not a required procedure, you do not have to do this in your implementation.
+* In this example, the access of an user will be revoked when that user is about to sign out. It is not a required procedure, you do not have to do this in your implementation.
 
 ## Database Schema
 * The following figure shows the database schema used in this example.
