@@ -48,7 +48,7 @@ def auth_redirect():
 
 
 @auth_app.route('/auth/callback', endpoint='oauth2_redirect_endpoint')
-def oauth2_callback():
+def auth_callback():
     # Check whether the query parameters has one named `code`
     if not request.args.get('code'):
         if current_user.is_authenticated:
