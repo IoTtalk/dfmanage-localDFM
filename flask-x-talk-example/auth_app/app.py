@@ -131,8 +131,8 @@ def auth_callback():
     return redirect(url_for('index'))
 
 
-@auth_app.route('/sign_out', methods=['POST', ], endpoint='sign_out_endpoint')
-def sign_out():
+@auth_app.route('/logout', methods=['POST', ], endpoint='logout_endpoint')
+def logout():
     if not current_user.is_authenticated:
         return redirect(url_for('index'))
 
@@ -173,7 +173,7 @@ def sign_out():
         # Delete the access token record no matter whether access token revocation is
         # success or not
         db.session.delete(access_token_record)
-        logger.info('User %r sign out', current_user.username)
+        logger.info('User %r logs out', current_user.username)
         db.session.commit()
 
     logout_user()
