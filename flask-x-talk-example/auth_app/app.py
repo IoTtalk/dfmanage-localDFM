@@ -122,7 +122,7 @@ def auth_callback():
 
         # Login user
         login_user(user_record)
-        logger.info('User %r sign in', current_user.username)
+        logger.info('User %r logs in', current_user.username)
     except Exception:
         db.session.rollback()
     else:
