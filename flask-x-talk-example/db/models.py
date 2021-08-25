@@ -25,7 +25,6 @@ class User(TimestampMixin, UserMixin, db.Model):
     username = db.Column(db.String(100))
     sub = db.Column(db.String(255), unique=True)
     email = db.Column(db.String(255))
-    is_active = db.Column(db.Boolean(), server_default=DefaultClause('1'))
 
     refresh_token = db.relationship(
         'RefreshToken',

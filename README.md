@@ -48,7 +48,7 @@ This repository is just an example of a X-Talk based on the Flask Framework. It 
 
 ## Database Schema
 * The following figure shows the database schema used in this example.
-  ![](https://i.imgur.com/n2yHaCf.png)
+  ![](https://i.imgur.com/DBbPCNA.png)
 
 ### User Table
 * The `sub` field has unique constraint since it is an unique identifier for every user in the IoTtalk Account Subsystem.
