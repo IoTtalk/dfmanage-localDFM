@@ -83,6 +83,10 @@ def auth_callback():
                 email=user_info.get('email')
             )
             db.session.add(user_record)
+        else:
+            user_record.username = \
+                user_info.get('preferred_username') or user_record.username
+            user_record.email = user_info.get('email') or user_record.email
 
         # Query the refresh token record
         refresh_token_record = \
