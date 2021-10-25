@@ -58,7 +58,8 @@ def create_app():
     #     - `X-Forwarded-Port`
     #
     # Ref: https://werkzeug.palletsprojects.com/en/1.0.x/middleware/proxy_fix/
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    if bool(os.getenv('PROXY_USED')):
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
     # Configure Flask-SQLAlchemy
     #
