@@ -1,0 +1,123 @@
+{% extends "base_navbar.html" %}
+
+{% block title %}User List{% endblock %}
+{% set title = 'User List' %}
+
+{% block body %}
+<div class="container">
+    <h2>{{ title }}</h2>
+    <div class="row">
+      <div class="col-md-4"></div>
+      <table class="table col-md-4">
+        <thead>
+          <tr>
+            {% for x in ["id", "name", "email", "group"] %}
+              <th>{{ x | title }}</th>
+            {% endfor %}
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for u in users %}
+            <tr class="user_record" data-uid="{{ u.id }}">
+              <td class="col-lg-2">{{ u.id }}</td>
+              <td class="col-lg-2">{{ u.username }}</td>
+                <td class="col-lg-2">{{ u.email }}</td>
+              <td class="col-lg-2">
+                  <select class="form-select select_group">
+                      {% for g in groups %}
+                        {% if g == u.group %}
+                        <option value="{{ u.group.name }}" selected data-gid="{{ u.group.id }}">{{ u.group.name }}</option>
+                        {% else %}
+                        <option value="{{ g.name }}" data-gid="{{ g.id }}">{{ g.name }}</option>
+                        {% endif %}
+                      {% endfor %}
+                  </select>
+              </td>
+                <!---td class="col-lg-2">
+                    <button type="button" class="view-permissions btn btn-link" data-bs-toggle="modal" data-bs-target="#permissionModal{{ u.id }}">detail</button>
+                </td--->
+              <td class="col-lg-2">
+                <button type="button" class="delete_user btn btn-danger">x</button>
+              </td>
+            </tr>
+          {% endfor %} <!-- for users -->
+        </tbody>
+      </table>
+      <div class="col-md-4"></div>
+    </div>
+
+    <!--ignore below-->
+    {% for u in users %}
+    <div class="modal fade" id="permissionModal{{ u.id }}"  data-uid="{{ u.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="permissionModalLabel{{ u.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="permissionModalLabel{{ u.id }}">manage permissions of {{ u.username }}</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body center-block">
+                    {% for p in permissions %}
+                    <div class="form-check">
+                      {% if p in u.permissions %}
+                      <input class="form-check-input permission_record" type="checkbox" value="" id="permission_{{ p.id }}_{{ u.id }}" data-pid="{{ p.id }}" checked>
+                      {% else %}
+                      <input class="form-check-input permission_record" type="checkbox" value="" id="permission_{{ p.id }}_{{ u.id }}" data-pid="{{ p.id }}">
+                      {% endif %}
+                      <label class="form-check-label" for="permission_{{ p.id }}_{{ u.id }}">
+                        {{ p.name }}
+                        {% if p.description %}
+                        ( {{ p.description }} )
+                        {% endif %}
+                      </label>
+                    </div>
+                    {% endfor %} <!-- for permissions -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary select_permissions">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %} <!-- for users -->
+</div>
+
+<script>
+    $('.delete_user').on('click', function(){
+      var target_element = $(this).parent().parent();
+      var u_id = $(this).parent().parent().attr('data-uid');
+
+      $.ajax({
+        url: '{{ url_for("account.index") }}' + '/user/' + u_id,
+        type: 'DELETE',
+        headers: { "X-CSRFToken": csrf_token },
+        success: function() {
+          target_element.remove();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+          alert(jqXHR.responseText);
+        }
+      });
+    });
+
+    $('.select_group').on('change', function(){
+      var uid = $(this).parents('.user_record').attr('data-uid');
+      var gid = $(this).find(":selected").attr('data-gid');
+
+      $.ajax({
+        url: '{{ url_for("account.index") }}' + '/user/' + uid + '/chgrp/' + gid,
+        type: 'POST',
+        headers: { "X-CSRFToken": csrf_token },
+        success: function(){
+          window.location = '{{ url_for("account.user_list") }}';
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+          alert(jqXHR.responseText);
+          window.location = '{{ url_for("account.user_list") }}';
+        }
+      });
+    });
+</script>
+{% endblock %}

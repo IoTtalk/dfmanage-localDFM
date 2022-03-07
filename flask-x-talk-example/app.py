@@ -1,36 +1,20 @@
 import logging
 import os
-
 from pathlib import Path
 
 from dotenv import load_dotenv
-from flask import (
-    render_template,
-    Flask,
-)
-from flask_login import (
-    LoginManager,
-)
-from flask_session import (
-    Session,
-)
-from flask_wtf.csrf import (
-    CSRFProtect,
-)
-from libgravatar import (
-    Gravatar,
-)
-from werkzeug.middleware.proxy_fix import (
-    ProxyFix,
-)
+from flask import Flask, render_template
+from flask_login import LoginManager
+from flask_session import Session
+from flask_wtf.csrf import CSRFProtect
+from libgravatar import Gravatar
+from werkzeug.middleware.proxy_fix import ProxyFix
 
+from .account_app import account_app
 from .auth_app import auth_app
 from .db import db
-from .db.models import (
-    User,
-)
+from .db.models import User
 from .oauth2_client import oauth2_client
-
 
 __all__ = [
     'create_app',
@@ -48,6 +32,7 @@ def create_app():
         template_folder=str(BASE_DIR / 'templates')
     )
     app.register_blueprint(auth_app)
+    app.register_blueprint(account_app)
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     # Make WSGI use those X-Forwareded HTTP headers.
     # The following X-Forwareded HTTP headers must be by the front reverse proxy.

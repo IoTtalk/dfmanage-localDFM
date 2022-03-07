@@ -1,10 +1,10 @@
 import datetime
 
 import pytz
-
 from flask_login import UserMixin
-from sqlalchemy.schema import DefaultClause
+from sqlalchemy import event
 
+from ..const import UserGroup
 from . import db
 
 
@@ -20,11 +20,28 @@ class TimestampMixin():
     )
 
 
+association_table = db.Table('association', db.Model.metadata,
+                             db.Column('user_id',
+                                       db.ForeignKey('user.id'), primary_key=True),
+                             db.Column('permission_id',
+                                       db.ForeignKey('permission.id'), primary_key=True))
+
+association_content_table = db.Table('association_content', db.Model.metadata,
+                                     db.Column('content_id',
+                                               db.ForeignKey('content.id'),
+                                               primary_key=True),
+                                     db.Column('permission_id',
+                                               db.ForeignKey('permission.id'),
+                                               primary_key=True))
+
+
 class User(TimestampMixin, UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100))
     sub = db.Column(db.String(255), unique=True)
     email = db.Column(db.String(255))
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
+    group = db.relationship("Group", back_populates='users')
 
     refresh_token = db.relationship(
         'RefreshToken',
@@ -39,6 +56,27 @@ class User(TimestampMixin, UserMixin, db.Model):
         cascade='all, delete-orphan',
         passive_deletes=True
     )
+
+    @property
+    def is_administrator(self):
+        return self.group.name == UserGroup.Administrator
+
+
+class Group(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), unique=True, nullable=False)
+    users = db.relationship('User', cascade='all, delete', back_populates='group')
+
+
+# init values in UserGroup after the table just created
+# see def of UserGroup for more details
+# you can remove this if you use the fixtures or something else to init
+@event.listens_for(Group.__table__, 'after_create')
+def create_groups(*args, **kwargs):
+    for group in UserGroup:
+        db.session.add(Group(name=group.value))
+    db.session.flush()
+    db.session.commit()
 
 
 class RefreshToken(TimestampMixin, db.Model):

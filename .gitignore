@@ -5,3 +5,4 @@ __pycache__
 *.db*
 tags
 flask-x-talk-example/.env
+.idea

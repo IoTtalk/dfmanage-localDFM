@@ -3,35 +3,16 @@ import logging
 import os
 
 import pytz
+from authlib.integrations.requests_client import OAuth2Session
+from flask import (Blueprint, redirect, render_template, request, session,
+                   url_for)
+from flask_login import current_user, login_user, logout_user
+from requests import exceptions as requests_exceptions
 
-from authlib.integrations.requests_client import (
-    OAuth2Session,
-)
-from flask import (
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
-    Blueprint,
-)
-from flask_login import (
-    current_user,
-    login_user,
-    logout_user,
-)
-from requests import (
-    exceptions as requests_exceptions,
-)
-
+from ..const import UserGroup
 from ..db import db
-from ..db.models import (
-    AccessToken,
-    RefreshToken,
-    User,
-)
+from ..db.models import AccessToken, Group, RefreshToken, User
 from ..oauth2_client import oauth2_client
-
 
 auth_app = Blueprint('auth', __name__, template_folder='templates')
 logger = logging.getLogger(__name__)
@@ -65,9 +46,18 @@ def auth_callback():
         #
         # Ref: https://docs.authlib.org/en/stable/client/frameworks.html#id1
         token_response = oauth2_client.iottalk.authorize_access_token()
-
         # Parse the received ID token
         user_info = oauth2_client.iottalk.parse_id_token(token_response)
+        print(token_response)
+
+        client = OAuth2Session(
+            client_id=os.getenv('XTALK_OAUTH2_CLIENT_ID'),
+            client_secret=os.getenv('XTALK_OAUTH2_CLIENT_SECRET'),
+            revocation_endpoint_auth_method='client_secret_basic'
+        )
+        res = client.introspect_token("http://localhost:8000/oauth2/v1/introspect/",
+                                      token=token_response.get('access_token'))
+        print(res.json())
     except Exception:
         logger.exception('Get access token failed:')
         return render_template('auth_error.html', error_reason='Something is broken...')
@@ -82,6 +72,10 @@ def auth_callback():
                 username=user_info.get('preferred_username'),
                 email=user_info.get('email')
             )
+            user_record.group = db.session.query(Group)\
+                .filter_by(name=UserGroup.Administrator).first() \
+                if user_info['group'] == 'Administrator' \
+                else db.session.query(Group).filter_by(name=UserGroup.User).first()
             db.session.add(user_record)
         else:
             user_record.username = \
