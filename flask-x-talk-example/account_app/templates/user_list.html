@@ -35,9 +35,6 @@
                       {% endfor %}
                   </select>
               </td>
-                <!---td class="col-lg-2">
-                    <button type="button" class="view-permissions btn btn-link" data-bs-toggle="modal" data-bs-target="#permissionModal{{ u.id }}">detail</button>
-                </td--->
               <td class="col-lg-2">
                 <button type="button" class="delete_user btn btn-danger">x</button>
               </td>
@@ -47,41 +44,6 @@
       </table>
       <div class="col-md-4"></div>
     </div>
-
-    <!--ignore below-->
-    {% for u in users %}
-    <div class="modal fade" id="permissionModal{{ u.id }}"  data-uid="{{ u.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="permissionModalLabel{{ u.id }}" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="permissionModalLabel{{ u.id }}">manage permissions of {{ u.username }}</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body center-block">
-                    {% for p in permissions %}
-                    <div class="form-check">
-                      {% if p in u.permissions %}
-                      <input class="form-check-input permission_record" type="checkbox" value="" id="permission_{{ p.id }}_{{ u.id }}" data-pid="{{ p.id }}" checked>
-                      {% else %}
-                      <input class="form-check-input permission_record" type="checkbox" value="" id="permission_{{ p.id }}_{{ u.id }}" data-pid="{{ p.id }}">
-                      {% endif %}
-                      <label class="form-check-label" for="permission_{{ p.id }}_{{ u.id }}">
-                        {{ p.name }}
-                        {% if p.description %}
-                        ( {{ p.description }} )
-                        {% endif %}
-                      </label>
-                    </div>
-                    {% endfor %} <!-- for permissions -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary select_permissions">Save changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endfor %} <!-- for users -->
 </div>
 
 <script>
