@@ -49,15 +49,6 @@ def auth_callback():
         # Parse the received ID token
         user_info = oauth2_client.iottalk.parse_id_token(token_response)
         print(token_response)
-
-        client = OAuth2Session(
-            client_id=os.getenv('XTALK_OAUTH2_CLIENT_ID'),
-            client_secret=os.getenv('XTALK_OAUTH2_CLIENT_SECRET'),
-            revocation_endpoint_auth_method='client_secret_basic'
-        )
-        res = client.introspect_token("http://localhost:8000/oauth2/v1/introspect/",
-                                      token=token_response.get('access_token'))
-        print(res.json())
     except Exception:
         logger.exception('Get access token failed:')
         return render_template('auth_error.html', error_reason='Something is broken...')

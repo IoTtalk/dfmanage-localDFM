@@ -20,21 +20,6 @@ class TimestampMixin():
     )
 
 
-association_table = db.Table('association', db.Model.metadata,
-                             db.Column('user_id',
-                                       db.ForeignKey('user.id'), primary_key=True),
-                             db.Column('permission_id',
-                                       db.ForeignKey('permission.id'), primary_key=True))
-
-association_content_table = db.Table('association_content', db.Model.metadata,
-                                     db.Column('content_id',
-                                               db.ForeignKey('content.id'),
-                                               primary_key=True),
-                                     db.Column('permission_id',
-                                               db.ForeignKey('permission.id'),
-                                               primary_key=True))
-
-
 class User(TimestampMixin, UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100))
