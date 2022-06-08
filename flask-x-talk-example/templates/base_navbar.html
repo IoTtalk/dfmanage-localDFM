@@ -27,8 +27,8 @@
               {% if current_user.is_authenticated %}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle d-flex align-items-center" id="userInfoDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true">
-                    <img class="me-1" style="width: 25px; height: 25px; border-radius: 50%;" src="{{ gravatar_url(current_user.email, size=25)}}" alt="Gravatar is not available right now"></img>
-                    <span class="fs-5">{{ current_user.username }}</span>
+                    <img class="me-1 d-none" style="width: 25px; height: 25px; border-radius: 50%;" src="{{ gravatar_url(current_user.email, size=25)}}" alt="Gravatar is not available right now"></img>
+                    <span class="fs-5">Account</span>
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userInfoDropdown" aria-expanded="false">
                     {% if current_user.is_administrator %}
@@ -38,6 +38,10 @@
                       </a>
                     </li>
                     {% endif %}
+                    <li>
+                      <span class="fs-5 dropdown-item">{{ current_user.username }}</span>
+                    </li>
+                    <hr>
                     <li>
                       <button class="btn dropdown-item" data-bs-toggle="modal" data-bs-target="#LogoutModal">
                         Logout
