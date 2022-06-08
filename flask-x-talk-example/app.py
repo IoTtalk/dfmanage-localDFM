@@ -3,8 +3,8 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from flask import Flask, render_template
-from flask_login import LoginManager
+from flask import Flask, render_template, url_for
+from flask_login import LoginManager, current_user
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
 from libgravatar import Gravatar
@@ -107,6 +107,9 @@ def create_app():
 
     @app.route('/')
     def index():
+        if not current_user.is_authenticated:
+            redirect_uri = url_for('auth.oauth2_redirect_endpoint', _external=True)
+            return oauth2_client.iottalk.authorize_redirect(redirect_uri)
         return render_template('index.html')
 
     return app
