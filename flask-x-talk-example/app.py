@@ -74,9 +74,9 @@ def create_app():
     # Ref: https://tinyurl.com/j6cnk22s
     oauth2_client.register(
         name='iottalk',
-        client_id=os.getenv('XTALK_OAUTH2_CLIENT_ID', ''),
-        client_secret=os.getenv('XTALK_OAUTH2_CLIENT_SECRET', ''),
-        server_metadata_url=os.getenv('XTALK_OIDC_DISCOVERY_ENDPOINT', ''),
+        client_id=os.getenv('OAUTH2_CLIENT_ID', ''),
+        client_secret=os.getenv('OAUTH2_CLIENT_SECRET', ''),
+        server_metadata_url=os.getenv('OIDC_DISCOVERY_ENDPOINT', ''),
         client_kwargs={'scope': 'openid', }
     )
 

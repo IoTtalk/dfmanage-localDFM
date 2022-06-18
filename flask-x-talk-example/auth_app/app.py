@@ -139,15 +139,15 @@ def logout():
     #
     # Ref: https://tinyurl.com/2rs2594h (OAuth2Session documentation)
     oauth2_client = OAuth2Session(
-        client_id=os.getenv('XTALK_OAUTH2_CLIENT_ID'),
-        client_secret=os.getenv('XTALK_OAUTH2_CLIENT_SECRET'),
+        client_id=os.getenv('OAUTH2_CLIENT_ID'),
+        client_secret=os.getenv('OAUTH2_CLIENT_SECRET'),
         revocation_endpoint_auth_method='client_secret_basic'
     )
 
     try:
         # Revoke the access token
         response = oauth2_client.revoke_token(
-            os.getenv('XTALK_OAUTH2_REVOCATION_ENDPOINT'),
+            os.getenv('OAUTH2_REVOCATION_ENDPOINT'),
             token=access_token_record.token,
             token_type_hint='access_token'
         )
