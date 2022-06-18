@@ -120,7 +120,7 @@ def auth_callback():
     return redirect(url_for('index'))
 
 
-@auth_app.route('/logout', methods=['POST', ], endpoint='logout_endpoint')
+@auth_app.route('/logout', methods=['POST'], endpoint='logout_endpoint')
 def logout():
     if not current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -133,7 +133,7 @@ def logout():
          )
 
     if not access_token_record:
-        return redirect(url_for('index'))
+        return redirect(os.getenv('ACCOUNT_HOST'))
 
     # Create an OAuth 2.0 client provided Authlib
     #
@@ -167,4 +167,4 @@ def logout():
 
     logout_user()
 
-    return redirect(url_for('index'))
+    return redirect(os.getenv('ACCOUNT_HOST'))
