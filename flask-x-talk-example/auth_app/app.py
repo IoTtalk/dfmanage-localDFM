@@ -1,6 +1,5 @@
 import datetime
 import logging
-import os
 
 import pytz
 from authlib.integrations.requests_client import OAuth2Session
@@ -13,6 +12,7 @@ from ..const import UserGroup
 from ..db import db
 from ..db.models import AccessToken, Group, RefreshToken, User
 from ..oauth2_client import oauth2_client
+from .. import config
 
 auth_app = Blueprint('auth', __name__, template_folder='templates')
 logger = logging.getLogger(__name__)
@@ -120,7 +120,7 @@ def auth_callback():
     return redirect(url_for('index'))
 
 
-@auth_app.route('/logout', methods=['POST', ], endpoint='logout_endpoint')
+@auth_app.route('/logout', methods=['POST'], endpoint='logout_endpoint')
 def logout():
     if not current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -133,21 +133,21 @@ def logout():
          )
 
     if not access_token_record:
-        return redirect(url_for('index'))
+        return redirect(config.ACCOUNT_HOST)
 
     # Create an OAuth 2.0 client provided Authlib
     #
     # Ref: https://tinyurl.com/2rs2594h (OAuth2Session documentation)
     oauth2_client = OAuth2Session(
-        client_id=os.getenv('XTALK_OAUTH2_CLIENT_ID'),
-        client_secret=os.getenv('XTALK_OAUTH2_CLIENT_SECRET'),
+        client_id=config.OAUTH2_CLIENT_ID,
+        client_secret=config.OAUTH2_CLIENT_SECRET,
         revocation_endpoint_auth_method='client_secret_basic'
     )
 
     try:
         # Revoke the access token
         response = oauth2_client.revoke_token(
-            os.getenv('XTALK_OAUTH2_REVOCATION_ENDPOINT'),
+            config.OAUTH2_REVOCATION_ENDPOINT,
             token=access_token_record.token,
             token_type_hint='access_token'
         )
@@ -167,4 +167,4 @@ def logout():
 
     logout_user()
 
-    return redirect(url_for('index'))
+    return redirect(config.ACCOUNT_HOST)
