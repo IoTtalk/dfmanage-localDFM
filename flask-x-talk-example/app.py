@@ -1,8 +1,6 @@
 import logging
-import os
 from pathlib import Path
 
-from dotenv import load_dotenv
 from flask import Flask, render_template, url_for
 from flask_login import LoginManager, current_user
 from flask_session import Session
@@ -15,6 +13,7 @@ from .auth_app import auth_app
 from .db import db
 from .db.models import User
 from .oauth2_client import oauth2_client
+from . import config
 
 __all__ = [
     'create_app',
@@ -25,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 
 def create_app():
-    load_dotenv(str(BASE_DIR / '.env'))
+    config.read_config(str(BASE_DIR / '.env'))
 
     app = Flask(
         __name__,
@@ -33,7 +32,7 @@ def create_app():
     )
     app.register_blueprint(auth_app)
     app.register_blueprint(account_app)
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+    app.config['SECRET_KEY'] = config.SECRET_KEY
     # Make WSGI use those X-Forwareded HTTP headers.
     # The following X-Forwareded HTTP headers must be by the front reverse proxy.
     #
@@ -43,7 +42,7 @@ def create_app():
     #     - `X-Forwarded-Port`
     #
     # Ref: https://werkzeug.palletsprojects.com/en/1.0.x/middleware/proxy_fix/
-    if bool(os.getenv('PROXY_USED')):
+    if bool(config.PROXY_USED):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
     # Configure Flask-SQLAlchemy
@@ -74,9 +73,9 @@ def create_app():
     # Ref: https://tinyurl.com/j6cnk22s
     oauth2_client.register(
         name='iottalk',
-        client_id=os.getenv('OAUTH2_CLIENT_ID', ''),
-        client_secret=os.getenv('OAUTH2_CLIENT_SECRET', ''),
-        server_metadata_url=os.getenv('OIDC_DISCOVERY_ENDPOINT', ''),
+        client_id=config.OAUTH2_CLIENT_ID,
+        client_secret=config.OAUTH2_CLIENT_SECRET,
+        server_metadata_url=config.OIDC_DISCOVERY_ENDPOINT,
         client_kwargs={'scope': 'openid', }
     )
 
