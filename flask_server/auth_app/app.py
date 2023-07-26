@@ -1,18 +1,19 @@
 import datetime
 import logging
+import sys
 
 import pytz
 from authlib.integrations.requests_client import OAuth2Session
-from flask import (Blueprint, redirect, render_template, request, session,
-                   url_for)
+from flask import Blueprint, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 from requests import exceptions as requests_exceptions
 
-from ..const import UserGroup
-from ..db import db
-from ..db.models import AccessToken, Group, RefreshToken, User
-from ..oauth2_client import oauth2_client
-from .. import config
+sys.path.append("..")
+from const import UserGroup
+from db import db
+from db.models import AccessToken, Group, RefreshToken, User
+from oauth2_client import oauth2_client
+import config
 
 auth_app = Blueprint('auth', __name__, template_folder='templates')
 logger = logging.getLogger(__name__)

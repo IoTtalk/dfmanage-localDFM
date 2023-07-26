@@ -1,11 +1,13 @@
 import datetime
+import sys
 
 import pytz
 from flask_login import UserMixin
-from sqlalchemy import event
+from sqlalchemy import event, CheckConstraint
 
-from ..const import UserGroup
-from . import db
+sys.path.append("..")
+from const import UserGroup
+from db import db
 
 
 class TimestampMixin():

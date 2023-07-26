@@ -8,12 +8,12 @@ from flask_wtf.csrf import CSRFProtect
 from libgravatar import Gravatar
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from .account_app import account_app
-from .auth_app import auth_app
-from .db import db
-from .db.models import User
-from .oauth2_client import oauth2_client
-from . import config
+from account_app import account_app
+from auth_app import auth_app
+from db import db
+from db.models import User
+from oauth2_client import oauth2_client
+import config
 
 __all__ = [
     'create_app',
