@@ -26,7 +26,7 @@ def auth_redirect():
     redirect_uri = url_for('auth.oauth2_redirect_endpoint', _external=True)
 
     # Redirect user-agent to the authorization endpoint
-    return oauth2_client.iottalk.authorize_redirect(redirect_uri)
+    return oauth2_client.nycu.authorize_redirect(redirect_uri)
 
 
 @auth_app.route('/auth/callback', endpoint='oauth2_redirect_endpoint')
@@ -40,15 +40,15 @@ def auth_callback():
         redirect_uri = url_for('auth.oauth2_redirect_endpoint', _external=True)
 
         # Redirect user-agent to the authorization endpoint if a user is not authenticated
-        return oauth2_client.iottalk.authorize_redirect(redirect_uri)
+        return oauth2_client.nycu.authorize_redirect(redirect_uri)
 
     try:
         # Exchange access token with an authorization code with token endpoint
         #
         # Ref: https://docs.authlib.org/en/stable/client/frameworks.html#id1
-        token_response = oauth2_client.iottalk.authorize_access_token()
+        token_response = oauth2_client.nycu.authorize_access_token()
         # Parse the received ID token
-        user_info = oauth2_client.iottalk.parse_id_token(token_response)
+        user_info = oauth2_client.nycu.parse_id_token(token_response)
         print(token_response)
     except Exception:
         logger.exception('Get access token failed:')

@@ -48,7 +48,7 @@ def create_app():
     # Configure Flask-SQLAlchemy
     #
     # Ref: https://tinyurl.com/26dbers4
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{}/xtalk.db'.format(str(BASE_DIR))
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{}/localdfm.db'.format(str(BASE_DIR))
     # Ref: https://tinyurl.com/9umn83fe
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
@@ -72,7 +72,7 @@ def create_app():
     #
     # Ref: https://tinyurl.com/j6cnk22s
     oauth2_client.register(
-        name='iottalk',
+        name='nycu',
         client_id=config.OAUTH2_CLIENT_ID,
         client_secret=config.OAUTH2_CLIENT_SECRET,
         server_metadata_url=config.OIDC_DISCOVERY_ENDPOINT,
