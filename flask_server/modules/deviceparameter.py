@@ -3,10 +3,10 @@ Device Feature Parameter Module.
 
 contains:
 
-    op_create_device_feature_parameter
-    op_update_device_feature_parameter
-    op_delete_device_feature_parameter
-    op_get_device_feature_parameter
+    op_create_device_parameter
+    op_update_device_parameter
+    op_delete_device_parameter
+    op_get_device_parameter
 """
 
 import sys
@@ -17,10 +17,10 @@ from db import models
 from db import db
 
 
-class DeviceFeatureParameter(Interface):
+class DeviceParameter(Interface):
     """DeviceFeatureParameter class."""
 
-    def op_create_device_feature_parameter(self, ctx, df_parameter, df_user, df_id=None, dm_id=None, mf_id=None):
+    def op_create_device_parameter(self, ctx, df_parameter, df_user, df_id=None, dm_id=None, mf_id=None):
         """
         Create Device Feature Parameters for DeviceFeature/DM_DF.
 
@@ -78,7 +78,7 @@ class DeviceFeatureParameter(Interface):
 
         return {'mf_id': mf_id} if mf_id else {'df_id': df_id}
 
-    def op_update_device_feature_parameter(self, ctx, df_parameter, df_user, df_id=None, dm_id=None, mf_id=None):
+    def op_update_device_parameter(self, ctx, df_parameter, df_user, df_id=None, dm_id=None, mf_id=None):
         """
         Update Device Feature Parameters for DeviceFeature/DM_DF.
 
@@ -158,7 +158,7 @@ class DeviceFeatureParameter(Interface):
 
         return {'mf_id': mf_id} if mf_id else {'df_id': df_id}
 
-    def op_delete_device_feature_parameter(self, ctx, df_id=None, dm_id=None, mf_id=None):
+    def op_delete_device_parameter(self, ctx, df_id=None, dm_id=None, mf_id=None):
         """
         Delete Device Feature Parameters for DeviceFeature/DM_DF.
 
@@ -195,12 +195,12 @@ class DeviceFeatureParameter(Interface):
         else:
             raise CCMError('One of [ "df_id" or "mf_id" ] should be supplied.')
 
-        db.session.query(models.DF_Parameter).filter(condition).delete()
+        db.session.query(models.DeviceParameter).filter(condition).delete()
         db.session.commit()
 
         return {'mf_id': mf_id} if mf_id else {'df_id': df_id}
 
-    def op_get_device_feature_parameter(self, ctx, df_user, df_id=None, dm_id=None, mf_id=None):
+    def op_get_device_parameter(self, ctx, df_user, df_id=None, dm_id=None, mf_id=None):
         """
         Get Device Feature Parameters for DeviceFeature/DM_DF.
 
@@ -238,7 +238,7 @@ class DeviceFeatureParameter(Interface):
 
         # query user DF_Parameter
         user = db.session.query(models.User).filter(models.User.username == df_user).first()
-        dfp_records = db.session.query(models.DF_Parameter).filter(models.DeviceParameter.user_id == user.id, condition).all()
+        dfp_records = db.session.query(models.DeviceParameter).filter(models.DeviceParameter.user_id == user.id, condition).all()
 
         if not dfp_records:
             # query general DF_Parameter

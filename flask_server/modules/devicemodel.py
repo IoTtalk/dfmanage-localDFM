@@ -13,7 +13,8 @@ contains:
 
 import sys
 sys.path.append("..")
-from modules.devicefeatureparameter import DeviceFeatureParameter
+from modules.deviceparameter import DeviceParameter
+from modules.dmdf import DMDFTag
 from modules.interface import Interface
 from modules.utils import CCMError, record_parser
 from db import models
@@ -23,25 +24,19 @@ from sqlalchemy import or_
 class DeviceModel(Interface):
     """DeviceModel class."""
 
-    def op_create_device_model(self, ctx, dm_name, df_list, dm_type='other',
-                               plural=None, device_only=None):
+    def op_create_device_model(self, ctx, dm_name, df_list, dm_type='other', plural=None, device_only=None):
         """
         Create a new Device Model.
 
-        Server will check the dm_name is not duplicate,
-        and return a new dm_id on success.
+        Server will check the dm_name is not duplicate, and return a new dm_id on success.
 
         :param dm_name: <DeviceModel.dm_name>
-        :param df_list: a list of Device Feature info,
-                        contains df_id, tags, df_parameter, etc
-        :param dm_type: <DeviceModel.dm_type>, optional, legacy
-        :param plural: The flag for this model's feature selection
-                       Use the checkbox (False) on the GUI or
-                       select (True), the default is False. Optional.
+        :param df_list: A list of Device Feature info, which contains df_id, tags, df_parameter, etc.
+        :param dm_type: <DeviceModel.dm_type>. Optional, Legacy.
+        :param plural: The flag for this model's feature selection. 
+                       Use the checkbox (False) on the GUI or select (True), the default is False. Optional.
         :param device_only: The flag for click this model on the GUI.
-                            Use the feature selection (False) or
-                            device selection (True), the default is False.
-                            Optional.
+                            Use the feature selection (False) or device selection (True), the default is False. Optional.
         :type dm_name: str
         :type df_list: List[<DeviceFeature>]
         :type dm_type: str
@@ -50,54 +45,56 @@ class DeviceModel(Interface):
 
         :return:
             {
-                'dm_id': <DeviceModel.dm_id>
+                'dm_id': <DeviceModel.id>
             }
         """
-        db_session = ctx.db_session
 
-        # check exist
+        # Check if dm exist
         if self.op_search_device_model(ctx, dm_name):
             raise CCMError('Device Model "{}" already exists'.format(dm_name))
 
-        # check df_list not empty
+        # Check df_list is not empty
         if not df_list:
             raise CCMError('Feature list cannot be empty')
 
-        # create new DeviceModel
+        # Create new DeviceModel
         new_dm = models.DeviceModel(
             dm_name=dm_name,
             plural=plural or False,
-            device_only=device_only or False)
-        db_session.add(new_dm)
-        db_session.commit()
+            device_only=device_only or False,
+        )
+        db.session.add(new_dm)
+        db.session.commit()
 
-        # TODO: check case of df_id not found
+        # TODO: Check case of df_id not found
 
-        # create new DM_DF and DF_Parameter
+        # Create new DM_DF and DeviceParameter
         for df in df_list:
-            # create new DM_DF
-            new_mf = models.DM_DF(
-                dm_id=new_dm.dm_id,
-                df_id=df['df_id'])
-            db_session.add(new_mf)
-            db_session.commit()
+            # Create new DM_DF
+            new_dmdf = models.DM_DF(
+                dm_id=new_dm.id,
+                df_id=df['df_id'],
+            )
+            db.session.add(new_dmdf)
+            db.session.commit()
 
-            # save DF_Parameter
-            self.op_create_device_feature_parameter(
+            # Save DeviceParameter
+            DeviceParameter.op_create_device_parameter(
                 ctx,
-                mf_id=new_mf.mf_id,
-                df_parameter=df['df_parameter'])
+                dmdf_id=new_dmdf.id,
+                df_parameter=df['df_parameter'],
+            )
 
-            # save DM_DF_Tag
-            self.op_save_dm_df_tag(
+            # Save DM_DF_Tag
+            DMDFTag.op_save_dm_df_tag(
                 ctx,
-                mf_id=new_mf.mf_id,
-                tags=df.get('tags', []))
+                mf_id=new_dmdf.id,
+                tags=df.get('tags', []),
+            )
 
-        return {'dm_id': new_dm.dm_id}
+        return {'dm_id': new_dm.id}
 
-    def op_update_device_model(self, ctx, dm_id, dm_name, df_list,
-                               dm_type='other', plural=None, device_only=None):
+    def op_update_device_model(self, ctx, dm_id, dm_name, df_list, dm_type='other', plural=None, device_only=None):
         """
         Update Device Model.
 
@@ -105,17 +102,14 @@ class DeviceModel(Interface):
         and check Device Model is not in use,
         then update and return the dm_id on success.
 
-        :param dm_id: <DeviceModel.dm_id>
+        :param dm_id: <DeviceModel.id>
         :param dm_name: <DeviceModel.dm_name>
-        :param df_list: a list of Device Feature info,
-                        conains df_id, tags, df_parameter, etc
+        :param df_list: a list of Device Feature info, conains df_id, tags, df_parameter, etc
         :param dm_type: <DeviceModel.dm_type>, optional, legacy
         :param plural: The flag for this model's feature selection
-                       Use the checkbox (False) on the GUI or
-                       select (True). Optional.
+                       Use the checkbox (False) on the GUI or select (True). Optional.
         :param device_only: The flag for click this model on the GUI.
-                            Use the feature selection or device selection.
-                            Optional.
+                            Use the feature selection or device selection. Optional.
         :type dm_id: int
         :type dm_name: str
         :type plural: Boolean
@@ -125,75 +119,72 @@ class DeviceModel(Interface):
 
         :return:
             {
-                'dm_id': <DeviceModel.dm_id>
+                'dm_id': <DeviceModel.id>
             }
         """
-        db_session = ctx.db_session
 
         # check df_list not empty
         if not df_list:
             raise CCMError('Feature list cannot be empty')
 
         # check dm exist
-        dm_record = (db_session.query(models.DeviceModel)
-                               .filter(models.DeviceModel.dm_name == dm_name)
-                               .first())
+        dm_record = db.session.query(models.DeviceModel).filter(models.DeviceModel.dm_name == dm_name).first()
         if not dm_record:
             raise CCMError('Device Model not found')
 
-        dm_id = dm_record.dm_id
+        dm_id = dm_record.id
 
         # check dm in use
-        do_records = (db_session.query(models.DeviceObject)
-                                .filter(models.DeviceObject.dm_id == dm_id)
-                                .all())
+        do_records = db.session.query(models.DeviceObject).filter(models.DeviceObject.dm_id == dm_id).all()
         if do_records:
             raise CCMError('Device Model is in use.')
 
         # update plural
         if plural:
             dm_record.plural = plural
-            db_session.commit()
+            db.session.commit()
 
         # update device_only
         if device_only:
             dm_record.device_only = device_only
-            db_session.commit()
+            db.session.commit()
 
         # TODO: fix user setting mf
-        old_mf_records = (db_session.query(models.DM_DF)
-                                    .filter(models.DM_DF.dm_id == dm_id))
+        old_mf_records = (db.session.query(models.DM_DF).filter(models.DM_DF.dm_id == dm_id))
         old_mf_records = {mf.df_id: mf for mf in old_mf_records}
+        
         # save DM_DF and DF_Parameter and DM_DF_Tag
         for df in df_list:
             if int(df['df_id']) in old_mf_records:
                 old_mf_records.pop(int(df['df_id']))
             # update DF_Parameter
-            self.op_update_device_feature_parameter(
+            DeviceParameter.op_update_device_parameter(
                 ctx,
                 dm_id=dm_id,
                 df_id=df['df_id'],
-                df_parameter=df.get('df_parameter', []))
+                df_parameter=df.get('df_parameter', [])
+            )
 
             # update new DM_DF_Tag
-            self.op_save_dm_df_tag(
+            DMDFTag.op_save_dm_df_tag(
                 ctx,
                 dm_id=dm_id,
                 df_id=df['df_id'],
-                tags=df.get('tags', []))
+                tags=df.get('tags', [])
+            )
 
-        # delete not use DF_Parameter, DM_DF_Tag, DM_DF
+        # delete not use DeviceParameter, DM_DF_Tag, DM_DF
         for mf in old_mf_records.values():
-            (db_session.query(models.DF_Parameter)
-                       .filter(models.DF_Parameter.mf_id == mf.mf_id)
+            (db.session.query(models.DeviceParameter)
+                       .filter(models.DeviceParameter.dmdf_id == mf.id)
                        .delete())
-            (db_session.query(models.DM_DF_Tag)
-                       .filter(models.DM_DF_Tag.mf_id == mf.mf_id)
+            (db.session.query(models.DM_DF_Tag)
+                       .filter(models.DM_DF_Tag.dmdf_id == mf.id)
                        .delete())
-            (db_session.query(models.DM_DF)
-                       .filter(models.DM_DF.mf_id == mf.mf_id)
+            (db.session.query(models.DM_DF)
+                       .filter(models.DM_DF.id == mf.id)
                        .delete())
-            db_session.commit()
+            db.session.commit()
 
         return {'dm_id': dm_id}
 
@@ -201,49 +192,39 @@ class DeviceModel(Interface):
         """
         Delete a Device Model by given dm_id.
 
-        Server will check the Device Model is used or not,
-        and return dm_id on success.
+        Server will check the Device Model is used or not, and return dm_id on success.
 
-        :param dm_id: <DeviceModel.dm_id>
+        :param dm_id: <DeviceModel.id>
         :type dm_id: int
 
         :return:
             {
-                'dm_id': <DeviceModel.dm_id>
+                'dm_id': <DeviceModel.id>
             }
         """
-        db_session = ctx.db_session
 
         # check exist
-        dm_record = (db_session.query(models.DeviceModel)
-                               .filter(models.DeviceModel.dm_id == dm_id)
-                               .first())
+        dm_record = db.session.query(models.DeviceModel).filter(models.DeviceModel.id == dm_id).first()
         if not dm_record:
             raise CCMError('Device Model not found')
 
         # check in use
-        do_records = (db_session.query(models.DeviceObject.dm_id)
-                                .filter(models.DeviceObject.dm_id == dm_id)
-                                .all())
+        do_records = db.session.query(models.DeviceObject.dm_id).filter(models.DeviceObject.dm_id == dm_id).all()
 
-        d_records = (db_session.query(models.Device.dm_id)
-                               .filter(models.Device.dm_id == dm_id)
-                               .all())
+        d_records = db.session.query(models.Device.dm_id).filter(models.Device.dm_id == dm_id).all()
         if do_records or d_records:
             raise CCMError('Device Model is in use.')
 
         # delete DM_DF, DF_Parameter, DM_DF_Tag
-        mf_records = (db_session.query(models.DM_DF)
-                                .filter(models.DM_DF.dm_id == dm_id)
-                                .all())
+        mf_records = db.session.query(models.DM_DF).filter(models.DM_DF.dm_id == dm_id).all()
         for mf_record in mf_records:
-            self.op_delete_device_feature_parameter(ctx, mf_id=mf_record.mf_id)
-            self.op_delete_dm_df_tag(ctx, mf_id=mf_record.mf_id)
-            db_session.delete(mf_record)
-            db_session.commit()
+            DeviceParameter.op_delete_device_parameter(ctx, mf_id=mf_record.id)
+            DMDFTag.op_delete_dm_df_tag(ctx, mf_id=mf_record.id)
+            db.session.delete(mf_record)
+            db.session.commit()
 
-        db_session.delete(dm_record)
-        db_session.commit()
+        db.session.delete(dm_record)
+        db.session.commit()
 
         return {'dm_id': dm_id}
 
@@ -256,16 +237,15 @@ class DeviceModel(Interface):
                 'dm_list': [<DeviceModel>, ...]
             }
         """
-        u_id = ctx.u_id
-        db_session = ctx.db_session
+        user_id = ctx.u_id
 
-        dm_records = (db_session.query(models.DeviceModel)
+        dm_records = (db.session.query(models.DeviceModel)
                                 .select_from(models.DeviceModel)
                                 .join(models.DM_DF)
-                                .join(models.DF_Parameter)
-                                .filter(or_(models.DF_Parameter.u_id == u_id,
-                                            models.DF_Parameter.u_id.is_(None)))
-                                .group_by(models.DeviceModel.dm_id)
+                                .join(models.DeviceParameter)
+                                .filter(or_(models.DeviceParameter.user_id == user_id,
+                                            models.DeviceParameter.user_id == 1))
+                                .group_by(models.DeviceModel.id)
                                 .order_by(models.DeviceModel.dm_name)
                                 .all())
 
@@ -288,13 +268,10 @@ class DeviceModel(Interface):
                 'df_list': [ <DeviceFeature>, ...] # with tag_id
             }
         """
-        u_id = ctx.u_id
-        db_session = ctx.db_session
+        user_id = ctx.u_id
 
         # query DeviceModel
-        dm_record = (db_session.query(models.DeviceModel)
-                               .filter(models.DeviceModel.dm_id == dm_id)
-                               .first())
+        dm_record = db.session.query(models.DeviceModel).filter(models.DeviceModel.id == dm_id).first()
         if dm_record is None:
             raise CCMError('Device Model id "{}" not found'.format(dm_id))
 
@@ -302,30 +279,32 @@ class DeviceModel(Interface):
         dm['df_list'] = []
 
         # query DeviceFeature
-        df_records = (db_session.query(models.DeviceFeature)
+        df_records = (db.session.query(models.DeviceFeature)
                                 .select_from(models.DM_DF)
                                 .join(models.DeviceFeature,
-                                      models.DeviceFeature.df_id == models.DM_DF.df_id)
-                                .join(models.DF_Parameter,
-                                      models.DF_Parameter.mf_id == models.DM_DF.mf_id)
+                                      models.DeviceFeature.id == models.DM_DF.df_id)
+                                .join(models.DeviceParameter,
+                                      models.DeviceParameter.dmdf_id == models.DM_DF.id)
                                 .filter(models.DM_DF.dm_id == dm_id,
-                                        or_(models.DF_Parameter.u_id == u_id,
-                                            models.DF_Parameter.u_id.is_(None)))
-                                .group_by(models.DeviceFeature.df_id)
+                                        or_(models.DeviceParameter.user_id == user_id,
+                                            models.DeviceParameter.user_id == 1))
+                                .group_by(models.DeviceFeature.id)
                                 .order_by(models.DeviceFeature.df_name)
                                 .all())
 
         for df_record in df_records:
             df = record_parser(df_record)
-            df['df_parameter'] = self.op_get_device_feature_parameter(
+            df['df_parameter'] = DeviceParameter.op_get_device_parameter(
                 ctx,
-                df_id=df['df_id'],
-                dm_id=dm_id)['df_parameter']
-            df.update(self.op_get_dm_df_tag(
-                ctx,
-                df_id=df['df_id'],
-                dm_id=dm_id))
-
+                df_id=df['id'],
+                dm_id=dm_id
+            )['df_parameter']
+            df.update(DMDFTag.op_get_dm_df_tag(
+                    ctx,
+                    df_id=df['id'],
+                    dm_id=dm_id
+                )
+            )
             dm['df_list'].append(df)
 
         return dm
@@ -337,10 +316,7 @@ class DeviceModel(Interface):
         :param dm_name: <DeviceModel.dm_name>
 
         :return:
-            <DeviceModel.dm_id> / None
+            <DeviceModel.id> / None
         """
-        dm_record = (ctx.db_session
-                        .query(models.DeviceModel)
-                        .filter(models.DeviceModel.dm_name == dm_name)
-                        .first())
-        return (dm_record.dm_id if dm_record else None)
+        dm_record = db.session.query(models.DeviceModel).filter(models.DeviceModel.dm_name == dm_name).first()
+        return (dm_record.id if dm_record else None)

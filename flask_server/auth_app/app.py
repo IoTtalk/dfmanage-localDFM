@@ -32,7 +32,11 @@ def auth_redirect():
 @auth_app.route('/auth/callback', endpoint='oauth2_redirect_endpoint')
 def auth_callback():
     # Check whether the query parameters has one named `code`
+    print("=====Into auth_callback=====")
+    print("request args :")
+    print(request.args)
     if not request.args.get('code'):
+        print("no code in request")
         if current_user.is_authenticated:
             # Redirect user-agent to the index page if a user is already authenticated
             return redirect(url_for('index'))
@@ -49,7 +53,11 @@ def auth_callback():
         token_response = oauth2_client.nycu.authorize_access_token()
         # Parse the received ID token
         user_info = oauth2_client.nycu.parse_id_token(token_response)
+        print("token response :")
         print(token_response)
+        print("//////////")
+        print("user_info :")
+        print(user_info)
     except Exception:
         logger.exception('Get access token failed:')
         return render_template('auth_error.html', error_reason='Something is broken...')
@@ -59,26 +67,37 @@ def auth_callback():
 
         if not user_record:
             # Create a new user record if there does not exist an old one
+            print("=====Create first user!=====")
             user_record = User(
                 sub=user_info.get('sub'),
                 username=user_info.get('preferred_username'),
                 email=user_info.get('email')
             )
-            user_record.group = db.session.query(Group)\
-                .filter_by(name=UserGroup.Administrator).first() \
-                if user_info['group'] == 'Administrator' \
-                else db.session.query(Group).filter_by(name=UserGroup.User).first()
+            if user_info['group'] == 'Administrator':
+                print("=====Set user group 'Administrator'=====")
+                user_record.group = db.session.query(Group).filter_by(name=UserGroup.Administrator).first()
+            else:
+                print("=====Set user group 'User'=====")
+                user_record.group = db.session.query(Group).filter_by(name=UserGroup.User).first()
+            print("=====Set user group successfully=====")
             db.session.add(user_record)
+            db.session.commit()
+            print("=====Add to DB successfully=====")
         else:
-            user_record.username = \
-                user_info.get('preferred_username') or user_record.username
+            print("=====Have the first user already!=====")
+            user_record.username = user_info.get('preferred_username') or user_record.username
             user_record.email = user_info.get('email') or user_record.email
-
+        
+        print("user_record.id :")
+        print(user_record.id)
+        
         # Query the refresh token record
-        refresh_token_record = \
-            db.session.query(RefreshToken).filter_by(user_id=user_record.id).first()
+        print("=====Begin searching refresh token from DB=====")
+        refresh_token_record = db.session.query(RefreshToken).filter_by(user_id=user_record.id).first()
+        print("=====Finish searching refresh token from DB=====")
 
         if not refresh_token_record:
+            print("=====Create new refresh token.=====")
             # Create a new refresh token record if there does not exist an old one
             refresh_token_record = RefreshToken(
                 token=token_response.get('refresh_token'),
@@ -86,6 +105,7 @@ def auth_callback():
             )
             db.session.add(refresh_token_record)
         elif token_response.get('refresh_token'):
+            print("=====Get refresh token already existed.=====")
             # If there is a refresh token in a token response, it indicates that
             # the old refresh token is expired, so we need to update the old refresh
             # token with a new one.
@@ -102,20 +122,23 @@ def auth_callback():
             refresh_token=refresh_token_record
         )
         db.session.add(access_token_record)
+        print("=====Finish add access_token into DB!=====")
 
-        # Flush all the pending operations to the database so we can get the actual
-        # id value.
+        # Flush all the pending operations to the database so we can get the actual id value.
         db.session.flush()
 
         # Store the access token ID to session
         session['access_token_id'] = access_token_record.id
+        print("=====Add token into Flask.session successfully!=====")
 
         # Login user
         login_user(user_record)
         logger.info('User %r logs in', current_user.username)
     except Exception:
+        print("=====Database Error=====")
         db.session.rollback()
     else:
+        print("I don't know why, but commit to DB.")
         db.session.commit()
 
     return redirect(url_for('index'))

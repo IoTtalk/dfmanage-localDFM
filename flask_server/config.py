@@ -14,9 +14,9 @@ OAUTH2_CLIENT_ID = ""
 # OAuth 2.0 Client Secret
 OAUTH2_CLIENT_SECRET = ""
 # OAuth 2.0 Redirect URI
-OAUTH2_REDIRECT_URI = "http://localhost:5000/auth/callback"
+OAUTH2_REDIRECT_URI = ""
 # Base URL of Account System
-ACCOUNT_HOST = "https://localhost:8000"
+ACCOUNT_HOST = ""
 # OpenID Connect Discovery Endpoint
 OIDC_DISCOVERY_ENDPOINT = ""
 # OAuth 2.0 Authorization Endpoint
@@ -35,11 +35,11 @@ def read_config(path: str):
 
     load_dotenv(path)
 
-    def set_(name, parser=str):
+    def set_(name):
         if name not in mod:
             raise ('variable `%s` unknown', name)
 
-        mod[name] = parser(os.getenv(name))
+        mod[name] = str(os.getenv(name))
 
     set_('PROXY_USED')
 

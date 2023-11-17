@@ -13,7 +13,7 @@ contains:
 
 import sys
 sys.path.append("..")
-from modules.devicefeatureparameter import DeviceFeatureParameter
+from modules.deviceparameter import DeviceParameter
 from modules.interface import Interface
 from modules.utils import CCMError, record_parser
 from db import models
@@ -74,7 +74,7 @@ class DeviceFeature(Interface):
         db.session.commit()
 
         # Create new DF_Parameter
-        DeviceFeatureParameter.op_create_device_feature_parameter(
+        DeviceParameter.op_create_device_parameter(
             ctx,
             df_id=new_df.id,
             df_user=df_user,
@@ -119,7 +119,7 @@ class DeviceFeature(Interface):
         db.session.commit()
         
         # Update DF_Parameter
-        DeviceFeatureParameter.op_update_device_feature_parameter(
+        DeviceParameter.op_update_device_parameter(
             ctx,
             df_id=df_id,
             df_user=df_user,
@@ -225,7 +225,7 @@ class DeviceFeature(Interface):
             raise CCMError('Device Feature id {} not found'.format(df_id))
 
         df_info = record_parser(df_record)
-        df_info['df_parameter'] = (self.op_get_device_feature_parameter(ctx, df_user, df_id).get('df_parameter', []))
+        df_info['df_parameter'] = (self.op_get_device_parameter(ctx, df_user, df_id).get('df_parameter', []))
 
         return df_info
 
